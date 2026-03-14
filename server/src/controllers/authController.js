@@ -82,4 +82,15 @@ const logoutUser = (req, res) => {
   res.status(200).json({ message: "User logged out successfully" });
 };
 
-module.exports = { registerUser, loginUser, logoutUser };
+// @desc    Get current logged-in user (for session restore on page refresh)
+// @route   GET /api/auth/me
+const getMe = (req, res) => {
+  const safeData = encryptPayload({
+    _id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+  });
+  res.status(200).json({ encryptedData: safeData });
+};
+
+module.exports = { registerUser, loginUser, logoutUser, getMe };

@@ -1,4 +1,5 @@
 const Task = require("../models/Task");
+const { encryptPayload } = require("../utils/encryption");
 
 // @desc    Create a new task
 // @route   POST /api/tasks
@@ -28,14 +29,12 @@ const createTask = async (req, res) => {
 // @route   GET /api/tasks
 const getTasks = async (req, res) => {
   try {
-    // Pagination logic [cite: 19]
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     let query = { user: req.user._id };
 
-    // Filter by status [cite: 20]
     if (req.query.status) {
       query.status = req.query.status;
     }
@@ -51,12 +50,15 @@ const getTasks = async (req, res) => {
 
     const totalTasks = await Task.countDocuments(query);
 
-    res.status(200).json({
+    // FIX: Encrypt response payload — consistent with auth endpoints
+    const encryptedData = encryptPayload({
       tasks,
       page,
       pages: Math.ceil(totalTasks / limit),
       total: totalTasks,
     });
+
+    res.status(200).json({ encryptedData });
   } catch (error) {
     console.error("Get Tasks Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -73,17 +75,20 @@ const updateTask = async (req, res) => {
       return res.status(404).json({ error: "Task not found" });
     }
 
-    // SABSE IMPORTANT SECURITY CHECK: Make sure user owns the task
     if (task.user.toString() !== req.user._id.toString()) {
       return res
         .status(403)
         .json({ error: "User not authorized to update this task" });
     }
 
-    const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    // FIX: Destructure only allowed fields — never pass raw req.body
+    const { title, description, status } = req.body;
+
+    const updatedTask = await Task.findByIdAndUpdate(
+      req.params.id,
+      { title, description, status },
+      { new: true, runValidators: true },
+    );
 
     res.status(200).json(updatedTask);
   } catch (error) {
@@ -102,7 +107,6 @@ const deleteTask = async (req, res) => {
       return res.status(404).json({ error: "Task not found" });
     }
 
-    // SECURITY CHECK
     if (task.user.toString() !== req.user._id.toString()) {
       return res
         .status(403)

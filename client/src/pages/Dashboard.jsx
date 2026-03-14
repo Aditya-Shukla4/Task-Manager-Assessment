@@ -2,20 +2,18 @@ import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import axiosInstance from "../api/axios";
 import { TASK_ENDPOINTS } from "../api/endpoints";
+import { decryptPayload } from "../utils/encryption"; // ADD THIS
 
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
 
-  // Core State Management
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Form States
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
-  // Filter & Pagination States
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
@@ -34,8 +32,11 @@ const Dashboard = () => {
       if (searchQuery) query += `&search=${searchQuery}`;
 
       const res = await axiosInstance.get(`${TASK_ENDPOINTS.GET_ALL}${query}`);
-      setTasks(res.data.tasks);
-      setTotalPages(res.data.pages);
+
+      // FIX: Decrypt the response since backend now encrypts task data
+      const decrypted = decryptPayload(res.data.encryptedData);
+      setTasks(decrypted.tasks);
+      setTotalPages(decrypted.pages);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to fetch tasks");
     } finally {
@@ -89,7 +90,6 @@ const Dashboard = () => {
     }
   };
 
-  // Helper function for dynamic status badge colors
   const getStatusStyle = (status) => {
     switch (status) {
       case "Completed":
@@ -163,7 +163,7 @@ const Dashboard = () => {
           </form>
         </div>
 
-        {/* Filters & Search - Core Requirement */}
+        {/* Filters & Search */}
         <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <form onSubmit={handleSearchSubmit} className="flex flex-1 gap-2">
             <input
@@ -195,7 +195,7 @@ const Dashboard = () => {
           </select>
         </div>
 
-        {/* Task List Rendering */}
+        {/* Task List */}
         {loading ? (
           <div className="text-center py-10 text-gray-500 font-medium">
             Loading tasks...
@@ -226,7 +226,6 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    {/* Clickable Status Badge */}
                     <button
                       onClick={() => handleStatusUpdate(task._id, task.status)}
                       className={`px-3 py-1 rounded-full text-xs font-bold border cursor-pointer hover:opacity-80 transition-opacity ${getStatusStyle(task.status)}`}
@@ -261,7 +260,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Pagination Controls */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4 mt-8">
             <button
