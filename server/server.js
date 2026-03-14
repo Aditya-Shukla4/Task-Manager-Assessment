@@ -17,7 +17,10 @@ app.use(cookieParser()); // To read HTTP-only cookies read
 // CORS setup (Security point of view to proper configure )
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: [
+      "http://localhost:5173", // Local development
+      /\.vercel\.app$/, // Any Vercel deployment URL
+    ],
     credentials: true,
   }),
 );
