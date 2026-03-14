@@ -3,8 +3,8 @@
 A production-ready Full-Stack Task Management application built with **React**, **Node.js**, **Express**, and **MongoDB**. This project features high-security implementations, including AES-256 payload encryption and JWT-based authentication via HTTP-only cookies.
 
 ## 🔗 Live Demo
-- **Frontend (Vercel):** [https://task-manager-assessment-eight.vercel.app/]
-- **Backend API (Render):** [https://task-manager-assessment-ramf.onrender.com]
+- **Frontend (Vercel):** https://task-manager-assessment-eight.vercel.app/
+- **Backend API (Render):** https://task-manager-assessment-ramf.onrender.com
 
 ## ✨ Key Features
 - **Security First:**
