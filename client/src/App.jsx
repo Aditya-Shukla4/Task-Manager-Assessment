@@ -8,15 +8,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-
-// Placeholder component for Dashboard testing
-// (We will build the actual Task Dashboard next)
-const Dashboard = () => (
-  <div style={{ textAlign: "center", marginTop: "50px" }}>
-    <h2>Protected Dashboard</h2>
-    <p>Welcome! Task management UI is under construction...</p>
-  </div>
-);
+import Dashboard from "./pages/Dashboard";
 
 const App = () => {
   return (
