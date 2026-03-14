@@ -1,96 +1,128 @@
 import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Extract login function from our global context
   const { login } = useContext(AuthContext);
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!email || !password) return setError("Please fill in all fields");
 
-    if (!email || !password) {
-      return setError("Please fill in all fields");
-    }
-
+    setLoading(true);
     try {
       const success = await login(email, password);
-      if (success) {
-        navigate("/dashboard");
-      } else {
-        setError("Invalid credentials or decryption failed");
-      }
+      if (success) navigate("/dashboard");
+      else setError("Invalid credentials or decryption failed");
     } catch (err) {
       setError(err.response?.data?.error || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="text-gray-500 mt-2">Sign in to manage your tasks</p>
-        </div>
+    <>
+      <div className="bg-mesh" />
 
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm text-center border border-red-200">
-            {error}
+      {/* Theme toggle */}
+      <div className="theme-toggle-fixed">
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          title="Toggle theme"
+        >
+          <div className="theme-toggle-thumb">
+            {theme === "dark" ? "☀️" : "🌙"}
           </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm"
-          >
-            Sign In
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <Link
-            to="/register"
-            className="text-blue-600 hover:text-blue-800 font-semibold transition-colors"
-          >
-            Create one now
-          </Link>
-        </p>
+        </button>
       </div>
-    </div>
+
+      <div className="auth-page">
+        <div className="auth-card glass animate-scaleIn">
+          {/* Logo */}
+          <div className="auth-logo">
+            <div className="auth-logo-icon">✦</div>
+            <span className="auth-logo-text">TaskFlow</span>
+          </div>
+
+          <h1 className="auth-heading animate-fadeUp delay-1">Welcome back</h1>
+          <p className="auth-subheading animate-fadeUp delay-2">
+            Sign in to your workspace
+          </p>
+
+          {error && (
+            <div
+              className="alert alert-error animate-slideDown"
+              style={{ marginBottom: 16 }}
+            >
+              <span>⚠</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="input-group animate-fadeUp delay-2">
+              <label className="input-label">Email address</label>
+              <input
+                className="input"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="input-group animate-fadeUp delay-3">
+              <label className="input-label">Password</label>
+              <input
+                className="input"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary animate-fadeUp delay-4"
+              style={{
+                width: "100%",
+                padding: "13px",
+                fontSize: 15,
+                marginTop: 4,
+              }}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <div className="spinner" style={{ width: 16, height: 16 }} />
+                  Signing in…
+                </>
+              ) : (
+                "Sign in →"
+              )}
+            </button>
+          </form>
+
+          <p className="auth-footer animate-fadeUp delay-5">
+            Don't have an account? <Link to="/register">Create one now</Link>
+          </p>
+        </div>
+      </div>
+    </>
   );
 };
 
