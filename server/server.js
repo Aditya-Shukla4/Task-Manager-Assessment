@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
+const taskRoutes = require("./src/routes/taskRoutes");
 
 connectDB();
 
@@ -20,7 +21,9 @@ app.use(
     credentials: true,
   }),
 );
+
 app.use("/api/auth", authRoutes);
+app.use("/api/tasks", taskRoutes);
 
 // Basic test route
 app.get("/api/health", (req, res) => {
