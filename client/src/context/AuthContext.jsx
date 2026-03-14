@@ -9,12 +9,22 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // On app load, verify session with backend instead of trusting localStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem("taskUser");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const verifySession = async () => {
+      try {
+        const res = await axiosInstance.get(AUTH_ENDPOINTS.ME);
+        if (res.data.encryptedData) {
+          const userData = decryptPayload(res.data.encryptedData);
+          if (userData) setUser(userData);
+        }
+      } catch {
+        setUser(null); // Cookie invalid or expired
+      } finally {
+        setLoading(false);
+      }
+    };
+    verifySession();
   }, []);
 
   const login = async (email, password) => {
@@ -22,13 +32,10 @@ export const AuthProvider = ({ children }) => {
       email,
       password,
     });
-
-    // Decrpyt the backend data
     if (res.data.encryptedData) {
       const userData = decryptPayload(res.data.encryptedData);
       if (userData) {
         setUser(userData);
-        localStorage.setItem("taskUser", JSON.stringify(userData));
         return true;
       }
     }
@@ -41,12 +48,10 @@ export const AuthProvider = ({ children }) => {
       email,
       password,
     });
-
     if (res.data.encryptedData) {
       const userData = decryptPayload(res.data.encryptedData);
       if (userData) {
         setUser(userData);
-        localStorage.setItem("taskUser", JSON.stringify(userData));
         return true;
       }
     }
@@ -56,7 +61,6 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await axiosInstance.post(AUTH_ENDPOINTS.LOGOUT);
     setUser(null);
-    localStorage.removeItem("taskUser");
   };
 
   return (

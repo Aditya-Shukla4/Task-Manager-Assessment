@@ -1,7 +1,8 @@
 export const AUTH_ENDPOINTS = {
-  REGISTER: "/auth/register",
   LOGIN: "/auth/login",
+  REGISTER: "/auth/register",
   LOGOUT: "/auth/logout",
+  ME: "/auth/me", // 👈 add this line
 };
 
 export const TASK_ENDPOINTS = {
